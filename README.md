@@ -5,5 +5,5 @@ Language used : Java level 7<br>
 Framework : Maven<br>
 Dependency : Json-simple (1.1)<br>
 Unit testing : JUnit4<br><br>
-Time complexity to access n files : O(n)
+Time complexity to access n files : O(n)<br>
 Time complexity to access individual array of objects : O(nm)<br>n - number of files  m - maximun array of objects in an object 
