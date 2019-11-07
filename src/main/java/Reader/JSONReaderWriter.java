@@ -1,9 +1,10 @@
 package Reader;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.Files;
+import java.util.*;
+import Exception.InputTypeException;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -18,7 +19,7 @@ public class JSONReaderWriter {
     private String folderPath;
     private String inputFileBaseName;
     private String outputFileBaseName;
-    private Integer size;
+    private long size;
     private int input_counter;
     private int output_counter;
     private String source;
@@ -37,35 +38,34 @@ public class JSONReaderWriter {
         source="";
     }
 
-    public boolean extractJSONFiles(){
+    public boolean extractJSONFiles() {
+
         source=folderPath+inputFileBaseName+input_counter+".json";
         File f=new File(source);
-        String key="";
-        /*
-        If the File doesn't even exist return false.
-         */
-        if(!f.exists()){
+        ArrayList<String> key= new ArrayList<>();
+
+        /* If the File doesn't even exist return false */
+        if(!f.exists()) {
             return false;
         }
 
-        while(f.exists()){
+        while(f.exists()) {
             try (FileReader reader = new FileReader(source)) {
                 Object obj = jsonParser.parse(reader);
                 JSONObject jsonob= (JSONObject) obj;
-//                Map<String, JSONObject> map = (Map<String,JSONObject>)jsonob.getMap();
-
+                Object obarr[]=jsonob.keySet().toArray();
+                key.add((String) obarr[0]);
                 JSONList.add(jsonob);
-//                System.out.println(obj);
             }
-            catch (FileNotFoundException e) {
+            catch(FileNotFoundException e) {
                 e.printStackTrace();
                 return false;
             }
-            catch (IOException e) {
+            catch(IOException e) {
                 e.printStackTrace();
                 return false;
             }
-            catch (ParseException e) {
+            catch(ParseException e) {
                 e.printStackTrace();
                 return false;
             }
@@ -73,44 +73,49 @@ public class JSONReaderWriter {
             source=folderPath+inputFileBaseName+input_counter+".json";
             f = new File(source);
         }
-//        printJSONList();
 
-        for(JSONObject temp : JSONList){
-            JSONArray array=((JSONArray) temp.get("strikers"));
-            for(Object i:array){
-                JSONObject ob= (JSONObject)i;
-                values.add(ob);
+        if(similerKeys(key)) {
+            for (JSONObject temp : JSONList) {
+                JSONArray array = ((JSONArray) temp.get(key.get(0)));
+                for (Object i : array) {
+                    JSONObject ob = (JSONObject) i;
+                    values.add(ob);
+                }
+            }
+            jsonobject.put(key.get(0), values);
+            System.out.println(jsonobject);
+        }
+        else{
+            try{
+                throw new InputTypeException("Cannot merge because different objects in file");
+            }
+            catch(Exception e){
+                System.out.println(e);
             }
         }
-        jsonobject.put("striker",values);
-        System.out.println(jsonobject);
 
         //write
-        try (FileWriter file = new FileWriter(folderPath+outputFileBaseName+output_counter+".json")) {
-            file.write(jsonobject.toJSONString());
-            file.flush();
+        File file= new File(folderPath+outputFileBaseName+output_counter+".json");
+        try(BufferedWriter writer = Files.newBufferedWriter(file.toPath())) {
+            if (file.length() < size) {
+                writer.write(jsonobject.toJSONString());
+                size-=file.length();
+                writer.flush();
+            }
         }
-        catch (IOException e) {
+        catch(IOException e) {
             e.printStackTrace();
             return false;
         }
-
         return true;
     }
 
-//    public boolean mergeJSONFiles(){
-//        if(JSONList.isEmpty()){
-//            System.out.println("***");
-//            return false;
-//        }
-//
-//        return true;
-//    }
-
-    public void printJSONList(){
-        for(JSONObject obj:JSONList){
-            System.out.println(obj);
-            System.out.println();
+    public boolean similerKeys(ArrayList<String> key){
+        Set<String> set= new HashSet<>();
+        set.addAll(key);
+        if(set.size()==1){
+            return true;
         }
+        return false;
     }
 }
