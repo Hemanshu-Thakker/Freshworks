@@ -1,7 +1,6 @@
 package Test;
 
 import Reader.JSONReaderWriter;
-import Writer.JSONWrite;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -10,7 +9,6 @@ import static org.junit.Assert.*;
 public class JSONTest {
 
     JSONReaderWriter jsonreader;
-    JSONWrite jsonwriter;
     String filePath;
     String iBase;
     String oBase;
@@ -30,9 +28,4 @@ public class JSONTest {
     public void extractJSONFiles_test() {
         assertTrue(jsonreader.extractJSONFiles());
     }
-
-//    @Test
-//    public void mergeJSONFiles_test(){
-//        assertTrue(jsonreader.mergeJSONFiles());
-//    }
 }
